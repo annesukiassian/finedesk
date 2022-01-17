@@ -1,11 +1,11 @@
 package tk.finedesk.finedesk.services.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import tk.finedesk.finedesk.repositories.CreativeToolRepository;
 import tk.finedesk.finedesk.services.CreativeToolService;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
 public class CreativeToolServiceImpl implements CreativeToolService {
 

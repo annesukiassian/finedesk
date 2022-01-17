@@ -1,7 +1,8 @@
 package tk.finedesk.finedesk.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
@@ -17,7 +18,8 @@ import java.util.Set;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Entity
 @Table(name = "user_projects")
 public class UserProject {
@@ -37,6 +39,6 @@ public class UserProject {
 
     @ManyToOne
     @JoinColumn(name = "user_profile_id")
-    private UserProfile userProfiles;
+    private UserProfile userProfile;
 
 }

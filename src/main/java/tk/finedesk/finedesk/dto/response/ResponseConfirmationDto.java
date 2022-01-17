@@ -1,4 +1,4 @@
-package tk.finedesk.finedesk.dto;
+package tk.finedesk.finedesk.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

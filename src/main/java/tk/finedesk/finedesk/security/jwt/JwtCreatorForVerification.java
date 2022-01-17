@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Component
-public class JwtCreator {
+public class JwtCreatorForVerification {
 
     @Value("${jwt.secret}")
     private String secret;

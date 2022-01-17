@@ -29,12 +29,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final List<String> permittedUrls = getPermittedUrls();
-
-    private List<String> getPermittedUrls() {
-
-        return List.of("/verification/confirm", "/login", "/user/register");
-    }
+    private final List<String> permittedUrls = List.of("/verification/confirm", "/login", "/user/register");
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -66,12 +61,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .sessionManagement().sessionCreationPolicy(STATELESS);
 
-        http.addFilter(new AuthenticationFilter(authenticationManagerBean()));
+//        http.addFilter(new AuthenticationFilter(authenticationManagerBean()));
 
 //        http.csrf().disable()
 //                .authorizeRequests().anyRequest().permitAll();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.addFilter(new AuthenticationFilter(authenticationManagerBean()));
+//        http.addFilter(new AuthenticationFilter(authenticationManagerBean()));
 
     }
 

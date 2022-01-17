@@ -1,2 +1,4 @@
-package tk.finedesk.finedesk.aws.services;public class AmazonSNSService {
+package tk.finedesk.finedesk.aws.services;
+
+public class AmazonSNSService {
 }

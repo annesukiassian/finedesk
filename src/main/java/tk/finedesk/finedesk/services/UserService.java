@@ -1,13 +1,17 @@
 package tk.finedesk.finedesk.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tk.finedesk.finedesk.repositories.UserRepository;
+import tk.finedesk.finedesk.dto.request.RequestRegistrationDTO;
+import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
+import tk.finedesk.finedesk.entities.User;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
 
-    private final UserRepository userRepository;
+public interface UserService {
+
+    ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalAccessException;
+
+    User getUser(String username);
+
+    boolean isUserExists(RequestRegistrationDTO userDto);
+
 
 }
