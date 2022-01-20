@@ -2,8 +2,12 @@ package tk.finedesk.finedesk.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import tk.finedesk.finedesk.enums.TokenType;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -29,5 +33,8 @@ public class UserVerificationToken {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date expirationTime = Date.from(Instant.from(ZonedDateTime.now().plus(Duration.ofHours(1L))));
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private TokenType type;
 
 }

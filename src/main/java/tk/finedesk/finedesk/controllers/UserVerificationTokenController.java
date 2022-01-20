@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
+import tk.finedesk.finedesk.dto.response.ResponseConfirmationDto;
+import tk.finedesk.finedesk.services.UserProfileService;
 import tk.finedesk.finedesk.services.UserVerificationTokenService;
 
 @Getter
@@ -19,15 +21,15 @@ import tk.finedesk.finedesk.services.UserVerificationTokenService;
 public class UserVerificationTokenController {
 
     private final UserVerificationTokenService userVerificationTokenService;
+    private final UserProfileService userProfileService;
 
     @GetMapping("/confirm/{token}")
     public ResponseEntity<ResponseBaseDto> confirmRegistration(@PathVariable("token") String token) {
 
         try {
-            var confirmationDto = userVerificationTokenService.validate(token);
+            ResponseConfirmationDto confirmationDto = userVerificationTokenService.validate(token);
 
             if (!confirmationDto.isConfirmed()) {
-
                 return ResponseEntity.badRequest().body(ResponseBaseDto.builder()
                         .message("")
                         .body(confirmationDto)

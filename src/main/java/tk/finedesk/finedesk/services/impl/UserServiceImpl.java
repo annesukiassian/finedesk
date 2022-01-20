@@ -3,6 +3,7 @@ package tk.finedesk.finedesk.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.internal.Pair;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.finedesk.finedesk.dto.request.RequestRegistrationDTO;
 import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
+import tk.finedesk.finedesk.dto.response.ResponseLoginDto;
 import tk.finedesk.finedesk.dto.response.ResponseUserDto;
 import tk.finedesk.finedesk.entities.User;
 import tk.finedesk.finedesk.entities.UserRole;
@@ -20,14 +22,17 @@ import tk.finedesk.finedesk.enums.ResponseEnum;
 import tk.finedesk.finedesk.enums.Role;
 import tk.finedesk.finedesk.repositories.UserRepository;
 import tk.finedesk.finedesk.repositories.UserRoleRepository;
+import tk.finedesk.finedesk.security.jwt.JwtCreator;
 import tk.finedesk.finedesk.services.UserService;
 import tk.finedesk.finedesk.services.UserVerificationTokenService;
 import tk.finedesk.finedesk.utils.PasswordValidator;
 
 import javax.management.relation.RoleNotFoundException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -40,11 +45,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final ModelMapper modelMapper;
     private final PasswordValidator passwordValidator;
     private final UserVerificationTokenService userVerificationTokenService;
+    private JwtCreator jwtCreator;
+
 
     @Transactional(rollbackFor = RoleNotFoundException.class)
     @Override
-    public ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalAccessException {
-
+    public ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalAccessException, RoleNotFoundException {
 
         boolean isValid = isPasswordValid(userDto);
 
@@ -61,11 +67,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         try {
             setDefaultRole(user);
         } catch (RoleNotFoundException e) {
-            throw new RuntimeException();
+            throw new RoleNotFoundException(e.getMessage());
         }
 
-        UserVerificationToken userVerificationToken = userVerificationTokenService.saveToken(user.getUsername());
+        UserVerificationToken userVerificationToken = userVerificationTokenService.generateVerificationToken(user.getUsername());
+
         user.setUserVerificationToken(userVerificationToken);
+
         User savedUser = userRepository.save(user);
 
         responseUserDto.setUUID(savedUser.getUuid());
@@ -107,6 +115,33 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return false;
     }
 
+    @Override
+    public ResponseBaseDto checkUser(String username) throws IllegalArgumentException {
+
+        jwtCreator = new JwtCreator();
+
+        UserDetails userDetails = loadUserByUsername(username);
+
+        List<SimpleGrantedAuthority> roles = userDetails.getAuthorities().stream().map(role -> new SimpleGrantedAuthority(role.getAuthority())).collect(Collectors.toList());
+
+        UserVerificationToken userRefreshToken = userVerificationTokenService.generateRefreshToken(username);
+
+        User byUsername = userRepository.findByUsername(username);
+        String uuid = byUsername.getUuid();
+
+        Pair<String, String> userUuid = Pair.of("uuid", uuid);
+
+        Pair<String, String> refreshToken = Pair.of("refreshToken", userRefreshToken.toString());
+
+        ChronoUnit minutes = ChronoUnit.MINUTES;
+
+        String accessToken = jwtCreator.createAccessToken(username, refreshToken, minutes, userUuid);
+
+        ResponseLoginDto responseLoginDto = ResponseLoginDto.builder().accessToken(accessToken).build();
+
+        return ResponseBaseDto.builder().body(responseLoginDto).message("Here is the access token").build();
+    }
+
 
     public boolean isPasswordValid(RequestRegistrationDTO userDto) {
         if (!isUserExists(userDto)) {
@@ -124,9 +159,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (user == null) {
             log.error("User {} not found in db", username);
             throw new UsernameNotFoundException("User not found in database");
-        } else {
-            log.info("User found in database: {}", username);
         }
+        log.info("User found in database: {}", username);
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 

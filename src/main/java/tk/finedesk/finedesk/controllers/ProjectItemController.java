@@ -9,7 +9,7 @@ import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
 import java.util.List;
 
 @RestController
-@RequestMapping("/project")
+@RequestMapping("/projectItems")
 public class ProjectItemController {
 
     @GetMapping

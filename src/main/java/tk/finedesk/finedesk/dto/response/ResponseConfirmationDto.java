@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import tk.finedesk.finedesk.dto.response.ResponseDto;
+import tk.finedesk.finedesk.entities.User;
 
 @Getter
 @Setter
@@ -11,5 +12,6 @@ import tk.finedesk.finedesk.dto.response.ResponseDto;
 public class ResponseConfirmationDto implements ResponseDto {
 
     private boolean isConfirmed;
+    private User user;
 
 }

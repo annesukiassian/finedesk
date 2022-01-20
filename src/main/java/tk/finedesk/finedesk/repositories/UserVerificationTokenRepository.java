@@ -11,4 +11,5 @@ public interface UserVerificationTokenRepository extends JpaRepository<UserVerif
 
     Optional<UserVerificationToken> getByUuid(String uuidFromToken);
 
+
 }

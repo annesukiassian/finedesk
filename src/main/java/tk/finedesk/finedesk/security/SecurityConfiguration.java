@@ -44,16 +44,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         web.ignoring().antMatchers("/login");
 
-
     }
 
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-       http
+        http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/verification/confirm", "/login", "/user/register").permitAll()
+                .antMatchers("/verification/confirm/**", "/auth/login", "/user/register/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()
@@ -65,7 +64,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 //        http.csrf().disable()
 //                .authorizeRequests().anyRequest().permitAll();
-        http.sessionManagement().sessionCreationPolicy(STATELESS);
+//        http.sessionManagement().sessionCreationPolicy(STATELESS);
 //        http.addFilter(new AuthenticationFilter(authenticationManagerBean()));
 
     }
