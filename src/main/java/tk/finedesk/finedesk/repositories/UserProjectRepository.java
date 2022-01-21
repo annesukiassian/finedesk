@@ -8,5 +8,5 @@ import tk.finedesk.finedesk.entities.UserProject;
 @Repository
 public interface UserProjectRepository extends JpaRepository<UserProject, Long>, PagingAndSortingRepository<UserProject, Long> {
 
-
+    UserProject findUserProjectByName(String name);
 }

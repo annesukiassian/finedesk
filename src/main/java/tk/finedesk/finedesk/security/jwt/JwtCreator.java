@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -44,7 +45,7 @@ public class JwtCreator {
 
     }
 
-    public String createAccessToken(String username, Pair<String, String> refreshToken, ChronoUnit minutes, Pair<String, String> userUuid) {
+    public String createAccessToken(String username, Pair<String, String> refreshToken, ChronoUnit minutes, Pair<String, String> userUuid, Pair<String, List<String>> userRoles) {
         Algorithm algorithm = Algorithm.HMAC256("mysupersecret");
 
         Instant issuedAt = Instant.now();
@@ -56,9 +57,20 @@ public class JwtCreator {
                 .withSubject(username)
                 .withClaim(refreshToken.getLeft(), refreshToken.getRight())
                 .withClaim(userUuid.getLeft(), userUuid.getRight())
+                .withClaim(userRoles.getLeft(), getRolesStringify(userRoles.getRight()))
                 .withIssuedAt(Date.from(issuedAt))
                 .withExpiresAt(Date.from(expiredAt))
                 .sign(algorithm);
+    }
+
+    private String getRolesStringify(List<String> rolesList) {
+        if (null == rolesList || rolesList.isEmpty()) {
+            return "";
+        }
+        if (rolesList.size() == 1) {
+            return rolesList.get(0);
+        }
+        return String.join(",", rolesList);
     }
 }
 

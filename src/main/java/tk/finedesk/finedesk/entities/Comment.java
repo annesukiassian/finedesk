@@ -1,33 +1,25 @@
 package tk.finedesk.finedesk.entities;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotEmpty;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@RequiredArgsConstructor
 @Entity
-@Table(name = "user_projects")
-public class UserProject {
+@Table(name = "comments")
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,18 +28,7 @@ public class UserProject {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date creationDate = Date.from(Instant.from(ZonedDateTime.now()));
 
-    @Column(unique = true, nullable = false)
-    private String name;
-
-    private String description;
-
-    @OneToMany
-    private Set<ProjectItem> projectItems;
-
-    @ManyToOne
-    @JoinColumn(name = "user_profile_id")
-    private UserProfile userProfile;
-
-
+    @NotEmpty
+    private String comment;
 
 }

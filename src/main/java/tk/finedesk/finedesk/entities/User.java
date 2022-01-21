@@ -26,6 +26,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -85,6 +86,6 @@ public class User implements Serializable {
     @JoinTable(name = "user_id_role_id",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private List<UserRole> userRoles;
+    private Set<UserRole> userRoles;
 
 }

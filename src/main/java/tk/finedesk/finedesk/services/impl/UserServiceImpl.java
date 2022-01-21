@@ -32,6 +32,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -92,7 +93,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_USER);
         if (userRole.isPresent()) {
-            user.setUserRoles(List.of(userRole.get()));
+            user.setUserRoles(Set.of(userRole.get()));
         } else {
             throw new RoleNotFoundException("No such role");
         }
@@ -123,19 +124,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         UserDetails userDetails = loadUserByUsername(username);
 
         List<SimpleGrantedAuthority> roles = userDetails.getAuthorities().stream().map(role -> new SimpleGrantedAuthority(role.getAuthority())).collect(Collectors.toList());
-
+        List<String> rolesString = roles.stream().map(SimpleGrantedAuthority::getAuthority).collect(Collectors.toList());
         UserVerificationToken userRefreshToken = userVerificationTokenService.generateRefreshToken(username);
 
         User byUsername = userRepository.findByUsername(username);
+
         String uuid = byUsername.getUuid();
 
         Pair<String, String> userUuid = Pair.of("uuid", uuid);
 
         Pair<String, String> refreshToken = Pair.of("refreshToken", userRefreshToken.toString());
 
+        Pair<String, List<String>> userRoles = Pair.of("userRoles", rolesString);
+
         ChronoUnit minutes = ChronoUnit.MINUTES;
 
-        String accessToken = jwtCreator.createAccessToken(username, refreshToken, minutes, userUuid);
+        String accessToken = jwtCreator.createAccessToken(username, refreshToken, minutes, userUuid, userRoles);
 
         ResponseLoginDto responseLoginDto = ResponseLoginDto.builder().accessToken(accessToken).build();
 
