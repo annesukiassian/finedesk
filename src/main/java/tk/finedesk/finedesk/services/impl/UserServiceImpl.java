@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User getUser(String username) {
+    public User getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
@@ -122,18 +122,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         jwtCreator = new JwtCreator();
 
         UserDetails userDetails = loadUserByUsername(username);
-
         List<SimpleGrantedAuthority> roles = userDetails.getAuthorities().stream().map(role -> new SimpleGrantedAuthority(role.getAuthority())).collect(Collectors.toList());
         List<String> rolesString = roles.stream().map(SimpleGrantedAuthority::getAuthority).collect(Collectors.toList());
         UserVerificationToken userRefreshToken = userVerificationTokenService.generateRefreshToken(username);
-
+        String refreshTokenUuid = userRefreshToken.getUuid();
         User byUsername = userRepository.findByUsername(username);
 
         String uuid = byUsername.getUuid();
 
-        Pair<String, String> userUuid = Pair.of("uuid", uuid);
+        Pair<String, String> userUuid = Pair.of("userUuid", uuid);
 
-        Pair<String, String> refreshToken = Pair.of("refreshToken", userRefreshToken.toString());
+        Pair<String, String> refreshToken = Pair.of("refreshTokenUuid", refreshTokenUuid);
 
         Pair<String, List<String>> userRoles = Pair.of("userRoles", rolesString);
 

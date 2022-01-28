@@ -11,7 +11,7 @@ public interface UserService {
 
     ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalAccessException, RoleNotFoundException;
 
-    User getUser(String username);
+    User getUserByUsername(String username);
 
     boolean isUserExists(RequestRegistrationDTO userDto);
 

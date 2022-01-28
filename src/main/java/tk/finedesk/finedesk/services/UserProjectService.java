@@ -1,10 +1,12 @@
 package tk.finedesk.finedesk.services;
 
 
-import tk.finedesk.finedesk.dto.request.RequestImageDto;
+import org.springframework.web.multipart.MultipartFile;
 import tk.finedesk.finedesk.dto.response.ResponseProjectDto;
+
+import java.util.List;
 
 public interface UserProjectService {
 
-    ResponseProjectDto addNewItemToProject(RequestImageDto requestImageDto);
+    ResponseProjectDto addNewItemToProject(List<MultipartFile> images);
 }
