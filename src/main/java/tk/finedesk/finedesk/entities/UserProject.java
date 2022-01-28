@@ -1,6 +1,7 @@
 package tk.finedesk.finedesk.entities;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -21,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Set;
 
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -36,18 +38,17 @@ public class UserProject {
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date creationDate = Date.from(Instant.from(ZonedDateTime.now()));
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String name;
 
     private String description;
 
-    @OneToMany
-    private Set<ProjectItem> projectItems;
+//    @OneToMany
+//    private Set<ProjectItem> projectItems;
 
     @ManyToOne
     @JoinColumn(name = "user_profile_id")
     private UserProfile userProfile;
-
 
 
 }

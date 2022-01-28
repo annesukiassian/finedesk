@@ -15,11 +15,14 @@ import tk.finedesk.finedesk.dto.request.RequestRegistrationDTO;
 import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
 import tk.finedesk.finedesk.dto.response.ResponseLoginDto;
 import tk.finedesk.finedesk.dto.response.ResponseUserDto;
+import tk.finedesk.finedesk.dto.response.ResponseUserRegistrationDto;
 import tk.finedesk.finedesk.entities.User;
+import tk.finedesk.finedesk.entities.UserProfile;
 import tk.finedesk.finedesk.entities.UserRole;
 import tk.finedesk.finedesk.entities.UserVerificationToken;
 import tk.finedesk.finedesk.enums.ResponseEnum;
 import tk.finedesk.finedesk.enums.Role;
+import tk.finedesk.finedesk.repositories.UserProfileRepository;
 import tk.finedesk.finedesk.repositories.UserRepository;
 import tk.finedesk.finedesk.repositories.UserRoleRepository;
 import tk.finedesk.finedesk.security.jwt.JwtCreator;
@@ -40,6 +43,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
 
+    private final UserProfileRepository userProfileRepository;
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -59,7 +63,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             return ResponseBaseDto.builder().message("Password is not valid").build();
         }
 
-        ResponseUserDto responseUserDto = new ResponseUserDto();
+        ResponseUserRegistrationDto responseUserRegistrationDto = new ResponseUserRegistrationDto();
 
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
@@ -77,7 +81,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         User savedUser = userRepository.save(user);
 
-        responseUserDto.setUUID(savedUser.getUuid());
+        responseUserRegistrationDto.setUUID(savedUser.getUuid());
 
         log.info("New user with username : {} registered", userDto.getUsername());
 
@@ -85,7 +89,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         return ResponseBaseDto.builder()
                 .message(ResponseEnum.RESPONSE_200_USER_REGISTRATION.getMessage())
-                .body(responseUserDto)
+                .body(responseUserRegistrationDto)
                 .build();
     }
 
@@ -142,7 +146,67 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         ResponseLoginDto responseLoginDto = ResponseLoginDto.builder().accessToken(accessToken).build();
 
-        return ResponseBaseDto.builder().body(responseLoginDto).message("Here is the access token").build();
+        return ResponseBaseDto.builder()
+                .body(responseLoginDto)
+                .message("Here is the access token")
+                .build();
+    }
+
+    @Override
+    public List<ResponseBaseDto> getAllUsers() {
+
+        List<User> allUsers = userRepository.findAll();
+
+        List<ResponseBaseDto> collect = allUsers.stream().map(
+                each -> getUserById(each.getId())).collect(Collectors.toList());
+
+
+        return collect;
+
+//        Set<String> uuids = new LinkedHashSet<>();
+//        allUsers.forEach(
+//                each -> uuids.add(each.getUuid())
+//        );
+
+
+//        return ResponseBaseDto.builder()
+//                .body(ResponseUsersDto.builder().userUuids(uuids).build())
+//                .message("Here are all the Users")
+//                .build();
+    }
+
+    @Override
+    public ResponseBaseDto getUserById(Long userId) {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Optional<UserProfile> userProfile = userProfileRepository.findByUsername(user.getUsername());
+            if (userProfile.isPresent()) {
+                UserProfile profile = userProfile.get();
+
+                Set<UserRole> userRoles = user.getUserRoles();
+                Set<String> roleString = userRoles.stream().map(userRole -> userRole.getRole().toString()).collect(Collectors.toSet());
+
+                return ResponseBaseDto.builder()
+                        .body(ResponseUserDto.builder()
+                                .id(userId)
+                                .userUuid(user.getUuid())
+                                .username(user.getUsername())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .roles(roleString)
+                                .profileId(profile.getId())
+                                .profilePhotoUrl(profile.getProfilePhotoURL())
+                                .coverPhotoUrl(profile.getCoverPhotoURL())
+                                .build()).message("Here is the User").build();
+
+            } else {
+                return ResponseBaseDto.builder().message("User doesn't have profile").build();
+            }
+        }
+        return ResponseBaseDto.builder().message("Couldn't find user by provided id").build();
     }
 
 

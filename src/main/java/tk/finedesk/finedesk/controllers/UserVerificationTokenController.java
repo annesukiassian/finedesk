@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
 import tk.finedesk.finedesk.dto.response.ResponseConfirmationDto;
@@ -23,7 +23,8 @@ public class UserVerificationTokenController {
     private final UserVerificationTokenService userVerificationTokenService;
     private final UserProfileService userProfileService;
 
-    @GetMapping("/confirm/{token}")
+    @RequestMapping(value = "/confirm/{token}",
+            method = RequestMethod.GET)
     public ResponseEntity<ResponseBaseDto> confirmRegistration(@PathVariable("token") String token) {
 
         try {
@@ -41,7 +42,10 @@ public class UserVerificationTokenController {
                         .build());
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(ResponseBaseDto.builder().message(e.getMessage()).build());
+            return ResponseEntity.internalServerError()
+                    .body(ResponseBaseDto.builder()
+                            .message(e.getMessage())
+                            .build());
         }
 
     }

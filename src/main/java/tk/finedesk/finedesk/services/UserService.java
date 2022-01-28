@@ -5,6 +5,7 @@ import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
 import tk.finedesk.finedesk.entities.User;
 
 import javax.management.relation.RoleNotFoundException;
+import java.util.List;
 
 
 public interface UserService {
@@ -17,4 +18,8 @@ public interface UserService {
 
 
     ResponseBaseDto checkUser(String username) throws IllegalAccessException;
+
+   List <ResponseBaseDto> getAllUsers();
+
+    ResponseBaseDto getUserById(Long userId);
 }

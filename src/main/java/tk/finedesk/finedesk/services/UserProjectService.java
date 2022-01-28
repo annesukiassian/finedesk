@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface UserProjectService {
 
-    ResponseProjectDto addNewItemToProject(List<MultipartFile> images);
+    ResponseProjectDto addNewItemToProject(List<MultipartFile> images, String username, String projectName, String description);
 }

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class ResponseUserDto implements ResponseDto {
+public class ResponseUserRegistrationDto implements ResponseDto {
 
     private String UUID;
 

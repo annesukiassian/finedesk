@@ -8,6 +8,8 @@ import tk.finedesk.finedesk.entities.UserProfile;
 import tk.finedesk.finedesk.repositories.UserProfileRepository;
 import tk.finedesk.finedesk.services.UserProfileService;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -21,5 +23,15 @@ public class UserProfileServiceImpl implements UserProfileService {
         UserProfile userProfile = new UserProfile();
         userProfile.setUser(user);
         user.setProfile(userProfile);
+    }
+
+    @Override
+    public UserProfile findByUsername(String username) {
+
+        Optional<UserProfile> profile = userProfileRepository.findByUsername(username);
+        if (profile.isPresent()) {
+            return profile.get();
+        }
+        return null;
     }
 }

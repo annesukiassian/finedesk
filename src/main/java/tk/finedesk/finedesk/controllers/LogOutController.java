@@ -4,7 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
 import tk.finedesk.finedesk.repositories.UserRepository;
@@ -23,8 +24,9 @@ public class LogOutController {
     private final UserRepository userRepository;
     private final UserVerificationTokenRepository userVerificationTokenRepository;
 
-
-    @PostMapping(value = "/logout")
+    @RequestMapping(value = "/logout",
+            method = RequestMethod.POST
+    )
     public ResponseEntity<ResponseBaseDto> logout(HttpServletRequest request, HttpServletResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {

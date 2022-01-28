@@ -9,8 +9,15 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
-public class ResponseUsersDto implements ResponseDto {
+public class ResponseUserDto implements ResponseDto {
 
-    private Set<String> registeredUsersUuids;
-
+    private Long id;
+    private String userUuid;
+    private String firstName;
+    private String lastName;
+    private String username;
+    private String coverPhotoUrl;
+    private String profilePhotoUrl;
+    private Long profileId;
+    private Set<String> roles;
 }

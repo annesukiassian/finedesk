@@ -10,5 +10,7 @@ import java.util.Optional;
 @Repository
 public interface UserProjectRepository extends JpaRepository<UserProject, Long>, PagingAndSortingRepository<UserProject, Long> {
 
+//    boolean findUserProjectByName(String name);
+
     Optional<UserProject> findUserProjectByName(String name);
 }
