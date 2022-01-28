@@ -1,14 +1,16 @@
 package tk.finedesk.finedesk.dto.response;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.Set;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
-public class ResponseUserDto implements ResponseDto {
+@Builder
+public class ResponseUsersDto implements ResponseDto {
 
-    private String UUID;
+    private Set<String> registeredUsersUuids;
 
 }
