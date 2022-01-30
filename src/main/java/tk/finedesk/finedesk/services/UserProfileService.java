@@ -8,7 +8,9 @@ public interface UserProfileService {
 
     void createProfile(User user);
 
+    UserProfile save(UserProfile userProfile);
+
     UserProfile findByUsername(String username);
 
-    UserProfile findBYProjectId(Long projectId);
+    UserProfile findByProjectId(Long projectId);
 }

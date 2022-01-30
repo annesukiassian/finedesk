@@ -155,12 +155,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public boolean isUserExists(RequestRegistrationDTO userDto) throws RoleNotFoundException {
         User user = userRepository.findByUsername(userDto.getUsername());
-        if(user==null){
+        if (user == null) {
             return false;
         }
         Set<UserRole> userRoles = user.getUserRoles();
         Object[] objects = userRoles.toArray();
-
         if (userRoles == null) {
             return false;
         } else if (((UserRole) objects[0]).getRole().equals(Role.ROLE_ADMIN)) {
@@ -268,10 +267,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             Set<UserRole> userRoles = user.getUserRoles();
             userRoles.add(userRole.get());
             userRepository.save(user);
-//            user.setUserRoles(Set.of(userRole.get()));
         } else {
             throw new RoleNotFoundException("No such role");
         }
+    }
+
+    @Override
+    public boolean isRegisteredAsUser(String username) {
+        User byUsername = userRepository.findByUsername(username);
+        Set<UserRole> userRoles = byUsername.getUserRoles();
+        Object[] objects = userRoles.toArray();
+        return ((UserRole) objects[0]).getRole().equals(Role.ROLE_USER);
     }
 
     public void addUserRoleToExistingAdmin(User existingUser) throws RoleNotFoundException {
