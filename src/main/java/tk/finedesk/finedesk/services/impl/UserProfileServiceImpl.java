@@ -17,7 +17,6 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private final UserProfileRepository userProfileRepository;
 
-
     @Override
     public void createProfile(User user) {
         UserProfile userProfile = new UserProfile();
@@ -33,5 +32,10 @@ public class UserProfileServiceImpl implements UserProfileService {
             return profile.get();
         }
         return null;
+    }
+
+    @Override
+    public UserProfile findBYProjectId(Long projectId) {
+        return userProfileRepository.findProfileByProjectLikes(projectId);
     }
 }

@@ -111,49 +111,9 @@ public class UserVerificationTokenServiceImpl implements UserVerificationTokenSe
 
         ChronoUnit days = ChronoUnit.DAYS;
 
-
         userByUsername.setUserVerificationToken(userRefreshToken);
         log.info("Refresh Token set in User table");
 
-//        String refreshToken = jwtCreator.generateRefreshToken(username, days);
-//        userByUsername.setUserVerificationToken(refreshToken);
-//        log.info("refreshToken is {}", refreshToken, " saved in Users table also");
-
         return userVerificationTokenRepository.save(userRefreshToken);
     }
-
-//    @Override
-//    public String generateToken(String username, Collection<SimpleGrantedAuthority> roles) throws IllegalAccessException {
-//        return generateToken(username, roles, null);
-//    }
-
-//    public String generateToken(String username, Collection<SimpleGrantedAuthority> roles, UserVerificationToken userVerificationToken) throws IllegalAccessException {
-//
-//        Algorithm algorithm = Algorithm.HMAC256("secretaf".getBytes());
-//        var issuedAt = Instant.now();
-//        var expiredAt = issuedAt.plus(1, ChronoUnit.DAYS);
-//        Pair<String, String> claims = null;
-//
-//
-//        if (roles == null) {
-//
-//            claims = Pair.of("uuid", userVerificationToken.getUuid());
-//            expiredAt = issuedAt.plus(1, ChronoUnit.HOURS);
-//
-//        } else if (userVerificationToken == null) {
-//
-//            claims = Pair.of("roles", roles.toString());
-//
-//        }else {
-//            throw new IllegalAccessException("Arguments are invalid");
-//        }
-//
-//        return JWT.create()
-//                .withSubject(username)
-//                .withClaim(claims.getLeft(), claims.getRight())
-//                .withIssuedAt(Date.from(issuedAt))
-//                .withExpiresAt(Date.from(expiredAt))
-//                .sign(algorithm);
-//    }
-
 }

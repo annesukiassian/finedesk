@@ -50,19 +50,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final ModelMapper modelMapper;
     private final PasswordValidator passwordValidator;
     private final UserVerificationTokenService userVerificationTokenService;
-    private JwtCreator jwtCreator;
 
 
     @Transactional(rollbackFor = RoleNotFoundException.class)
     @Override
-    public ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalAccessException, RoleNotFoundException {
+    public ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalArgumentException, RoleNotFoundException {
 
         boolean isValid = isPasswordValid(userDto);
 
         if (!isValid) {
             return ResponseBaseDto.builder().message("Password is not valid").build();
         }
-
         ResponseUserRegistrationDto responseUserRegistrationDto = new ResponseUserRegistrationDto();
 
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
@@ -93,15 +91,59 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .build();
     }
 
-    private void setDefaultRole(User user) throws RoleNotFoundException {
+    @Override
+    public ResponseBaseDto registerAdmin(RequestRegistrationDTO adminDto) throws IllegalArgumentException, RoleNotFoundException {
+        boolean isValid = isPasswordValid(adminDto);
 
+        if (!isValid) {
+            return ResponseBaseDto.builder().message("Password is not valid").build();
+        }
+        ResponseUserRegistrationDto responseUserRegistrationDto = new ResponseUserRegistrationDto();
+
+        adminDto.setPassword(passwordEncoder.encode(adminDto.getPassword()));
+
+        User admin = modelMapper.map(adminDto, User.class);
+
+        try {
+            setAdminRole(admin);
+        } catch (RoleNotFoundException e) {
+            throw new RoleNotFoundException(e.getMessage());
+        }
+
+        UserVerificationToken userVerificationToken = userVerificationTokenService.generateVerificationToken(admin.getUsername());
+
+        admin.setUserVerificationToken(userVerificationToken);
+
+        User savedUser = userRepository.save(admin);
+
+        responseUserRegistrationDto.setUUID(savedUser.getUuid());
+
+        log.info("New admin with username : {} registered", adminDto.getUsername());
+
+        //TODO implement email sending service with SQS
+
+        return ResponseBaseDto.builder()
+                .message(ResponseEnum.RESPONSE_200_USER_REGISTRATION.getMessage())
+                .body(responseUserRegistrationDto)
+                .build();
+    }
+
+    private void setDefaultRole(User user) throws RoleNotFoundException {
         Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_USER);
         if (userRole.isPresent()) {
             user.setUserRoles(Set.of(userRole.get()));
         } else {
             throw new RoleNotFoundException("No such role");
         }
+    }
 
+    private void setAdminRole(User admin) throws RoleNotFoundException {
+        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_ADMIN);
+        if (userRole.isPresent()) {
+            admin.setUserRoles(Set.of(userRole.get()));
+        } else {
+            throw new RoleNotFoundException("No such role");
+        }
     }
 
     @Override
@@ -111,19 +153,28 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 
     @Override
-    public boolean isUserExists(RequestRegistrationDTO userDto) {
+    public boolean isUserExists(RequestRegistrationDTO userDto) throws RoleNotFoundException {
         User user = userRepository.findByUsername(userDto.getUsername());
-        if (user != null) {
-            log.info("User with username : {} already exists", userDto.getUsername());
+        if(user==null){
+            return false;
+        }
+        Set<UserRole> userRoles = user.getUserRoles();
+        Object[] objects = userRoles.toArray();
+
+        if (userRoles == null) {
+            return false;
+        } else if (((UserRole) objects[0]).getRole().equals(Role.ROLE_ADMIN)) {
+            addUserRoleToExistingAdmin(user);
+            log.info("Added user role");
             return true;
         }
-        return false;
+        return true;
     }
 
     @Override
     public ResponseBaseDto checkUser(String username) throws IllegalArgumentException {
 
-        jwtCreator = new JwtCreator();
+        JwtCreator jwtCreator = new JwtCreator();
 
         UserDetails userDetails = loadUserByUsername(username);
         List<SimpleGrantedAuthority> roles = userDetails.getAuthorities().stream().map(role -> new SimpleGrantedAuthority(role.getAuthority())).collect(Collectors.toList());
@@ -209,8 +260,33 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return ResponseBaseDto.builder().message("Couldn't find user by provided id").build();
     }
 
+    @Override
+    public void addAdminRoleToExistingUser(RequestRegistrationDTO adminDto) throws RoleNotFoundException {
+        User user = userRepository.findByUsername(adminDto.getUsername());
+        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_ADMIN);
+        if (userRole.isPresent()) {
+            Set<UserRole> userRoles = user.getUserRoles();
+            userRoles.add(userRole.get());
+            userRepository.save(user);
+//            user.setUserRoles(Set.of(userRole.get()));
+        } else {
+            throw new RoleNotFoundException("No such role");
+        }
+    }
 
-    public boolean isPasswordValid(RequestRegistrationDTO userDto) {
+    public void addUserRoleToExistingAdmin(User existingUser) throws RoleNotFoundException {
+        User user = userRepository.findByUsername(existingUser.getUsername());
+        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_USER);
+        if (userRole.isPresent()) {
+            Set<UserRole> userRoles = user.getUserRoles();
+            userRoles.add(userRole.get());
+            userRepository.save(user);
+        } else {
+            throw new RoleNotFoundException("No such role");
+        }
+    }
+
+    public boolean isPasswordValid(RequestRegistrationDTO userDto) throws RoleNotFoundException {
         if (!isUserExists(userDto)) {
             passwordValidator.isPasswordValid(userDto.getPassword());
             return true;

@@ -5,10 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tk.finedesk.finedesk.aws.services.AmazonS3Service;
+import tk.finedesk.finedesk.dto.response.ResponseLikeDto;
 import tk.finedesk.finedesk.dto.response.ResponseProjectDto;
+import tk.finedesk.finedesk.entities.Like;
 import tk.finedesk.finedesk.entities.UserProfile;
 import tk.finedesk.finedesk.entities.UserProject;
 import tk.finedesk.finedesk.repositories.UserProjectRepository;
+import tk.finedesk.finedesk.services.LikeService;
 import tk.finedesk.finedesk.services.ProjectItemService;
 import tk.finedesk.finedesk.services.UserProfileService;
 import tk.finedesk.finedesk.services.UserProjectService;
@@ -20,6 +23,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -30,6 +34,7 @@ public class UserProjectServiceImpl implements UserProjectService {
     private final UserProjectRepository userProjectRepository;
     private final UserProfileService userProfileService;
     private final ProjectItemService projectItemService;
+    private final LikeService likeService;
     private AmazonS3Service amazonS3Service;
 
 
@@ -68,10 +73,45 @@ public class UserProjectServiceImpl implements UserProjectService {
         );
 
         for (String itemUrl : itemUrls) {
-            projectItemService.createProjectItem(itemUrl,projectId);
+            projectItemService.createProjectItem(itemUrl, projectId);
         }
 
         //TODO create update method and use it.
         return ResponseProjectDto.builder().message("uploaded").build();
+    }
+
+    @Override
+    public ResponseLikeDto likeProject(Long projectId, String username) {
+
+        Optional<UserProject> projectById = userProjectRepository.findById(projectId);
+
+        UserProfile userProfile = userProfileService.findByUsername(username);
+
+        if (projectById.isPresent()) {
+            UserProject userProject = projectById.get();
+            String author = userProject.getUserProfile().getUser().getUsername();
+            if (author.equals(username)) {
+                return ResponseLikeDto.builder().message("You can't like your own project").build();
+            }
+
+            UserProfile userProfileByProjectId = userProfileService.findBYProjectId(projectId);
+
+            if (userProfileByProjectId == null) {
+                Like like = new Like();
+//                List<UserProfile> userProfiles = like.getUserProfiles();
+//                userProfiles.add(userProfile);
+//                like.setUserProfiles(userProfiles);
+//                like.setUserProject(userProject);
+//                like.setLikeDate(Date.from(Instant.now()));
+                Like saved = likeService.save(like);
+                return ResponseLikeDto.builder().message("liked").build();
+            }
+
+            //TODO ete ka, jnjum enq, ete che, avelacnum
+
+        }
+
+        return ResponseLikeDto.builder().message("Something went wrong").build();
+
     }
 }

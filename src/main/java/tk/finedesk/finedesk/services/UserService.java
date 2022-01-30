@@ -12,14 +12,18 @@ public interface UserService {
 
     ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalAccessException, RoleNotFoundException;
 
+    ResponseBaseDto registerAdmin(RequestRegistrationDTO adminDto) throws RoleNotFoundException;
+
     User getUserByUsername(String username);
 
-    boolean isUserExists(RequestRegistrationDTO userDto);
+    boolean isUserExists(RequestRegistrationDTO userDto) throws RoleNotFoundException;
 
 
     ResponseBaseDto checkUser(String username) throws IllegalAccessException;
 
-   List <ResponseBaseDto> getAllUsers();
+    List<ResponseBaseDto> getAllUsers();
 
     ResponseBaseDto getUserById(Long userId);
+
+    void addAdminRoleToExistingUser(RequestRegistrationDTO adminDto) throws RoleNotFoundException;
 }
