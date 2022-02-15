@@ -28,7 +28,7 @@ public class AuthController {
 
 
     @RequestMapping(value = "/login",
-            method = RequestMethod.GET)
+            method = RequestMethod.POST)
     public ResponseEntity<ResponseBaseDto> login(@RequestBody @Valid RequestAuthenticationDto requestAuthenticationDto) {
 
         try {

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
+import tk.finedesk.finedesk.dto.response.ResponseLikeDto;
 import tk.finedesk.finedesk.dto.response.ResponseProjectDto;
 import tk.finedesk.finedesk.services.UserProjectService;
 
@@ -55,11 +56,16 @@ public class UserProjectController {
     @RequestMapping(value = "/{projectId}/like",
             method = RequestMethod.POST
     )
-    public ResponseEntity<ResponseBaseDto> likeProject(@PathVariable("projectId") long projectId, @AuthenticationPrincipal User user) {
+    public ResponseEntity<ResponseBaseDto> likeProject(@PathVariable("projectId") Long projectId, @AuthenticationPrincipal User user) {
+
+
+        String username = user.getUsername();
+
+        ResponseLikeDto responseLikeDto = userProjectService.likeProject(projectId, username);
 
 //        TODO profile service, project service
 
-        return ResponseEntity.ok(ResponseBaseDto.builder().build());
+        return ResponseEntity.ok(ResponseBaseDto.builder().body(responseLikeDto).build());
     }
 
     @RequestMapping(

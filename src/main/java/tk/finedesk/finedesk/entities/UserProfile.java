@@ -17,6 +17,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -42,13 +44,13 @@ public class UserProfile {
     @OneToMany
     private Set<UserSkills> userSkills;
 
-//    @OneToMany
-//    private List<UserProject> userProjects;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name = "Profile_Like",
+            joinColumns = {@JoinColumn(name = "profile_id")},
+            inverseJoinColumns = {@JoinColumn(name = "like_id")}
+    )
+    private List<Like> likes = new LinkedList<>();
 
-    @ManyToMany
-    @JoinTable(name = "likes",
-            joinColumns = @JoinColumn(name = "user_profile_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_project_id"))
-    private Set<UserProject> likes;
 }
 
