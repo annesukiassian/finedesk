@@ -2,7 +2,6 @@ package tk.finedesk.finedesk.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -13,10 +12,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -42,8 +42,13 @@ public class UserProfile {
     @OneToMany
     private Set<UserSkills> userSkills;
 
-    @OneToMany
-    private List<UserProject> userProjects;
+//    @OneToMany
+//    private List<UserProject> userProjects;
 
+    @ManyToMany
+    @JoinTable(name = "likes",
+            joinColumns = @JoinColumn(name = "user_profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_project_id"))
+    private Set<UserProject> likes;
 }
 

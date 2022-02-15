@@ -5,7 +5,6 @@ import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
@@ -25,7 +24,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -77,14 +76,14 @@ public class User implements Serializable {
 
     private boolean isBlocked;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_verification_token_id", nullable = false, referencedColumnName = "id")
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JoinColumn(name = "user_verification_token_id", referencedColumnName = "id")
     private UserVerificationToken userVerificationToken;
 
     @ManyToMany
     @JoinTable(name = "user_id_role_id",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private List<UserRole> userRoles;
+    private Set<UserRole> userRoles;
 
 }

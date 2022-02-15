@@ -78,17 +78,20 @@ public class UserVerificationTokenServiceImpl implements UserVerificationTokenSe
                         Date now = Date.from(Instant.from(ZonedDateTime.now()));
                         if (now.before(expirationTime)) {
                             UserVerificationToken userVerificationToken = byUuid.get();
-                            User byVerificationToken = userRepository.findByVerificationToken(userVerificationToken);
-                            byVerificationToken.setActive(true);
-                            userProfileService.createProfile(byVerificationToken);
-                            userRepository.saveAndFlush(byVerificationToken);
-                            userVerificationTokenRepository.delete(userVerificationToken);
-                            response.setConfirmed(true);
+                            if (userVerificationToken.getType().equals(TokenType.VERIFICATION)) {
+                                User byVerificationToken = userRepository.findByVerificationToken(userVerificationToken);
+                                byVerificationToken.setActive(true);
+                                userProfileService.createProfile(byVerificationToken);
+                                userRepository.saveAndFlush(byVerificationToken);
+                                byVerificationToken.setUserVerificationToken(null);
+                                userVerificationTokenRepository.delete(userVerificationToken);
+                                response.setConfirmed(true);
+                            }
+
                         }
                     }
                 }
             }
-
             return response;
         } catch (Exception e) {
             throw new Exception(e.getMessage());
@@ -98,16 +101,23 @@ public class UserVerificationTokenServiceImpl implements UserVerificationTokenSe
     @Override
     public UserVerificationToken generateRefreshToken(String username) {
 
+        User userByUsername = userRepository.findByUsername(username);
+
         log.info("Generating refresh token");
 
         UserVerificationToken userRefreshToken = new UserVerificationToken();
+
         userRefreshToken.setType(TokenType.REFRESH);
 
         ChronoUnit days = ChronoUnit.DAYS;
 
-        String refreshToken = jwtCreator.generateRefreshToken(username, days);
 
-        log.info("refreshToken is {}", refreshToken, " saved");
+        userByUsername.setUserVerificationToken(userRefreshToken);
+        log.info("Refresh Token set in User table");
+
+//        String refreshToken = jwtCreator.generateRefreshToken(username, days);
+//        userByUsername.setUserVerificationToken(refreshToken);
+//        log.info("refreshToken is {}", refreshToken, " saved in Users table also");
 
         return userVerificationTokenRepository.save(userRefreshToken);
     }

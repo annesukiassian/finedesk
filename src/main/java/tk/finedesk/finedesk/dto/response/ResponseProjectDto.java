@@ -1,6 +1,15 @@
 package tk.finedesk.finedesk.dto.response;
 
-import tk.finedesk.finedesk.dto.response.ResponseDto;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@Builder
 public class ResponseProjectDto implements ResponseDto {
+
+    private String message;
+
+
 }
