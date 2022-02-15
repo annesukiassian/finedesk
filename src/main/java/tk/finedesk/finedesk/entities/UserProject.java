@@ -13,12 +13,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -45,6 +48,6 @@ public class UserProject {
     @JoinColumn(name = "user_profile_id")
     private UserProfile userProfile;
 
-//    @OneToMany
-//    private List<Like> likes = new LinkedList<>();
+    @OneToMany
+    private Set<Like> likes = new HashSet<>();
 }

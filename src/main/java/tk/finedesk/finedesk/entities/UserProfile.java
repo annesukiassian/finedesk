@@ -17,8 +17,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -50,7 +49,7 @@ public class UserProfile {
             joinColumns = {@JoinColumn(name = "profile_id")},
             inverseJoinColumns = {@JoinColumn(name = "like_id")}
     )
-    private List<Like> likes = new LinkedList<>();
+    private Set<Like> likes = new HashSet<>();
 
 }
 

@@ -25,6 +25,14 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
+    public UserProfile save(UserProfile userProfile) {
+        return userProfileRepository.save(userProfile);
+    }
+
+
+
+
+    @Override
     public UserProfile findByUsername(String username) {
 
         Optional<UserProfile> profile = userProfileRepository.findByUsername(username);
@@ -35,7 +43,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    public UserProfile findBYProjectId(Long projectId) {
+    public UserProfile findByProjectId(Long projectId) {
         return userProfileRepository.findProfileByProjectLikes(projectId);
     }
 }

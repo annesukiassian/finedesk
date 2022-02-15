@@ -4,10 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import tk.finedesk.finedesk.entities.Like;
 import tk.finedesk.finedesk.entities.UserProfile;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,5 +20,6 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
 
     @Query(value = "select distinct u from UserProfile u join u.likes l where l.userProject.id=:id")
     UserProfile findProfileByProjectLikes(@Param("id") Long id);
+
 
 }

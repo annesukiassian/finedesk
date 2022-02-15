@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -53,6 +54,7 @@ public class UserProjectController {
         return ResponseEntity.ok(ResponseBaseDto.builder().body(responseProjectDto).build());
     }
 
+    @Transactional
     @RequestMapping(value = "/{projectId}/like",
             method = RequestMethod.POST
     )

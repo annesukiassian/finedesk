@@ -26,4 +26,6 @@ public interface UserService {
     ResponseBaseDto getUserById(Long userId);
 
     void addAdminRoleToExistingUser(RequestRegistrationDTO adminDto) throws RoleNotFoundException;
+
+    boolean isRegisteredAsUser(String username);
 }
