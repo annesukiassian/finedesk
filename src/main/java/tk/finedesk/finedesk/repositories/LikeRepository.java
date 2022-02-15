@@ -9,15 +9,8 @@ import tk.finedesk.finedesk.entities.UserProject;
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
-
-    //    Like findLikeByUserProject(UserProject userProject);
     @Transactional
     void removeLikeByUserProject(UserProject userProject);
 
     Like findLikeByUserProject(UserProject userProject);
-
-
-//    List<Like> findByUserProject(UserProject project);
-
-//    List<Like> findByUserProfiles (List<UserProfile> profiles);
 }

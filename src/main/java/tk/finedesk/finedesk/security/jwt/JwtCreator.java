@@ -20,7 +20,7 @@ public class JwtCreator {
 
         Algorithm algorithm = Algorithm.HMAC256("secret");
         Instant issuedAt = Instant.now();
-        Instant expiredAt = issuedAt.plus(1, hours);
+        Instant expiredAt = issuedAt.plus(2, hours);
 
         return JWT.create()
                 .withSubject(username)
@@ -31,25 +31,11 @@ public class JwtCreator {
 
     }
 
-//    public String generateRefreshToken(String username, ChronoUnit days) {
-//        Algorithm algorithm = Algorithm.HMAC256("mysupersecret");
-//
-//        Instant issuedAt = Instant.now();
-//        Instant expiredAt = issuedAt.plus(7, days);
-//
-//        return JWT.create()
-//                .withSubject(username)
-//                .withIssuedAt(Date.from(issuedAt))
-//                .withExpiresAt(Date.from(expiredAt))
-//                .sign(algorithm);
-//
-//    }
-
-    public String createAccessToken(String username, Pair<String, String> refreshTokenUuid, ChronoUnit minutes, Pair<String, String> userUuid, Pair<String, List<String>> userRoles) {
+    public String createAccessToken(String username, Pair<String, String> refreshTokenUuid, ChronoUnit duration, Pair<String, String> userUuid, Pair<String, List<String>> userRoles) {
 
         Algorithm algorithm = Algorithm.HMAC256("mysupersecret");
         Instant issuedAt = Instant.now();
-        Instant expiredAt = issuedAt.plus(15, minutes);
+        Instant expiredAt = issuedAt.plus(2, duration);
 
         log.info("Creating Access token");
 

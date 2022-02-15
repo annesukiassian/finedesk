@@ -6,12 +6,6 @@ import tk.finedesk.finedesk.entities.UserProject;
 
 public interface LikeService {
 
-//    Like createPostLike(UserProfile byUsername, UserProject userProject);
-
-//    List<Like> getLikestByUserProject(UserProject userProject);
-//
-//    List<Like> getLikesByProfiles(List<UserProfile> userProfile);
-
     @Transactional
     void removeLikeByUserProject(UserProject userProject);
 

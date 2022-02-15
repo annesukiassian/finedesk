@@ -77,7 +77,6 @@ public class User implements Serializable {
     private boolean isBlocked;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn(name = "user_verification_token_id", referencedColumnName = "id")
     private UserVerificationToken userVerificationToken;
 
     @ManyToMany

@@ -21,9 +21,8 @@ public interface UserService {
 
     ResponseBaseDto checkUser(String username) throws IllegalAccessException;
 
-    List<ResponseBaseDto> getAllUsers();
 
-    ResponseBaseDto getUserById(Long userId);
+    ResponseBaseDto getUserById(String userId);
 
     void addAdminRoleToExistingUser(RequestRegistrationDTO adminDto) throws RoleNotFoundException;
 

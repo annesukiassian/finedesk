@@ -70,7 +70,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
                                 String accessToken = jwtCreator.createAccessToken(userName, Pair.of("refreshTokenUuid", uuidString),
                                         ChronoUnit.MINUTES, Pair.of("userUuid", uuid1), Pair.of("userRoles", rolesString));
                                 response.addHeader("Authorization", "Bearer " + accessToken);
-//                                request.setAttribute("Authorization","Bearer "+accessToken);
                             }
                         }
                     }

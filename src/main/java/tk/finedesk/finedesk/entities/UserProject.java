@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Builder
 @Getter
@@ -36,10 +38,15 @@ public class UserProject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "uuid",
+            strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "user_project_UUID", columnDefinition = "VARCHAR(255)", updatable = false, nullable = false)
+    private String uuid = UUID.randomUUID().toString();
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date creationDate = Date.from(Instant.from(ZonedDateTime.now()));
 
-    @Column(unique = true)
     private String name;
 
     private String description;
