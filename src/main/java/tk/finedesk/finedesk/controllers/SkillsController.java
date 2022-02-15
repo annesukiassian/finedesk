@@ -12,7 +12,6 @@ import java.util.List;
 @RequestMapping("/skills")
 public class SkillsController {
 
-
     @RequestMapping(
             method = RequestMethod.GET
     )

@@ -11,7 +11,6 @@ import java.util.Set;
 @Builder
 public class ResponseUserDto implements ResponseDto {
 
-    private Long id;
     private String userUuid;
     private String firstName;
     private String lastName;
@@ -20,4 +19,5 @@ public class ResponseUserDto implements ResponseDto {
     private String profilePhotoUrl;
     private Long profileId;
     private Set<String> roles;
+
 }

@@ -11,6 +11,4 @@ public interface UserVerificationTokenService {
 
     UserVerificationToken generateRefreshToken(String username);
 
-
-//    String generateToken(String username, Collection<SimpleGrantedAuthority> roles) throws IllegalAccessException;
 }

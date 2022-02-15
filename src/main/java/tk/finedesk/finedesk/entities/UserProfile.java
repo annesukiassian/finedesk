@@ -1,11 +1,14 @@
 package tk.finedesk.finedesk.entities;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -19,7 +22,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -32,6 +37,12 @@ public class UserProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "uuid",
+            strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "user_profile_UUID", columnDefinition = "VARCHAR(255)", updatable = false, nullable = false)
+    private String uuid = UUID.randomUUID().toString();
+
     private String profilePhotoURL;
 
     private String coverPhotoURL;
@@ -41,7 +52,7 @@ public class UserProfile {
     private User user;
 
     @OneToMany
-    private Set<UserSkills> userSkills;
+    private Set<UserSkills> userSkills=new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(

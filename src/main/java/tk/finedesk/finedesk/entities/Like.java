@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,6 +25,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 @Table(name = "likes")
@@ -39,11 +41,14 @@ public class Like {
     @Column(name = "like_id")
     private Long id;
 
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "uuid",
+            strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "like_UUID", columnDefinition = "VARCHAR(255)", updatable = false, nullable = false)
+    private String uuid = UUID.randomUUID().toString();
+
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date likeDate = Date.from(Instant.from(ZonedDateTime.now()));
-
-//    @ManyToMany(mappedBy = "likes", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-//    private List<UserProfile> userProfiles = new LinkedList<>();
 
     @ManyToOne
     @JoinColumn(name = "user_project_id")

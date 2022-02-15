@@ -7,8 +7,10 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.internal.Pair;
 import org.springframework.stereotype.Service;
+import tk.finedesk.finedesk.aws.services.AmazonSQSService;
 import tk.finedesk.finedesk.dto.response.ResponseConfirmationDto;
 import tk.finedesk.finedesk.entities.User;
+import tk.finedesk.finedesk.entities.UserProfile;
 import tk.finedesk.finedesk.entities.UserVerificationToken;
 import tk.finedesk.finedesk.enums.TokenType;
 import tk.finedesk.finedesk.repositories.UserRepository;
@@ -34,6 +36,8 @@ public class UserVerificationTokenServiceImpl implements UserVerificationTokenSe
     private final UserVerificationTokenRepository userVerificationTokenRepository;
     private final UserRepository userRepository;
     private final UserProfileService userProfileService;
+    private final AmazonSQSService amazonSQSService;
+
 
     @Override
     public UserVerificationToken generateVerificationToken(String username) throws IllegalArgumentException {
@@ -48,10 +52,20 @@ public class UserVerificationTokenServiceImpl implements UserVerificationTokenSe
         String verificationToken = jwtCreator.generateVerificationToken(username, verificationUuidPair, hours);
 
         //TODO send this token by SQS
+        //TODO open this part when Lambda is being tested
+//        Message message = Message.builder().body(SQSEmailMessageDto.builder().message(getUrl(verificationToken)).build().getMessage()).build();
+//        amazonSQSService.putMessagesIntoQueue("mail-sender-queue.fifo", message);
+
 
         log.info("jwtToken is {}", verificationToken);
 
         return userVerificationTokenRepository.save(userVerificationToken);
+    }
+
+
+    private String getUrl(String verificationToken) {
+        //TODO Add second parameter into configs in future
+        return String.format("%s%s", "http://localhost/verification/confirm/", verificationToken);
     }
 
     @Override
@@ -81,7 +95,7 @@ public class UserVerificationTokenServiceImpl implements UserVerificationTokenSe
                             if (userVerificationToken.getType().equals(TokenType.VERIFICATION)) {
                                 User byVerificationToken = userRepository.findByVerificationToken(userVerificationToken);
                                 byVerificationToken.setActive(true);
-                                userProfileService.createProfile(byVerificationToken);
+                                UserProfile profile = userProfileService.createProfile(byVerificationToken);
                                 userRepository.saveAndFlush(byVerificationToken);
                                 byVerificationToken.setUserVerificationToken(null);
                                 userVerificationTokenRepository.delete(userVerificationToken);

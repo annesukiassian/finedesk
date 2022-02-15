@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class ResponseLoginDto implements ResponseDto {
+public class ResponseMessage implements ResponseDto {
 
-    private String accessToken;
+    private String message;
 
 }

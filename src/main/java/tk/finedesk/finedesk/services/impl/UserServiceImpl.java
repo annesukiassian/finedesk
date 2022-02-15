@@ -1,6 +1,6 @@
 package tk.finedesk.finedesk.services.impl;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.internal.Pair;
@@ -11,9 +11,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.finedesk.finedesk.aws.configuration.model.SQSEmailMessageDto;
+import tk.finedesk.finedesk.aws.services.AmazonSQSService;
 import tk.finedesk.finedesk.dto.request.RequestRegistrationDTO;
 import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
-import tk.finedesk.finedesk.dto.response.ResponseLoginDto;
+import tk.finedesk.finedesk.dto.response.ResponseProfileDto;
 import tk.finedesk.finedesk.dto.response.ResponseUserDto;
 import tk.finedesk.finedesk.dto.response.ResponseUserRegistrationDto;
 import tk.finedesk.finedesk.entities.User;
@@ -40,7 +42,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserProfileRepository userProfileRepository;
@@ -51,6 +53,29 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final PasswordValidator passwordValidator;
     private final UserVerificationTokenService userVerificationTokenService;
 
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+        User user = userRepository.findByUsername(username);
+//        if (user == null) {
+//            log.warn("User not found in DB, Checking in Inmemory users list.");
+////            UserDetails inMemoryUser = inMemoryUserDetailsManager.loadUserByUsername(username);
+////            if (inMemoryUser == null) {
+////                log.error("User {} not found in db", username);
+////                throw new UsernameNotFoundException("User not found in database");
+////            }
+////            return new org.springframework.security.core.userdetails.User(inMemoryUser.getUsername(), inMemoryUser.getPassword(), inMemoryUser.getAuthorities());
+//        }
+        log.info("User found in database: {}", username);
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+        user.getUserRoles().forEach(userRole -> authorities.add(new SimpleGrantedAuthority(userRole.getRole().toString())));
+
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
+
+    }
 
     @Transactional(rollbackFor = RoleNotFoundException.class)
     @Override
@@ -82,9 +107,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         responseUserRegistrationDto.setUUID(savedUser.getUuid());
 
         log.info("New user with username : {} registered", userDto.getUsername());
-
-        //TODO implement email sending service with SQS
-
         return ResponseBaseDto.builder()
                 .message(ResponseEnum.RESPONSE_200_USER_REGISTRATION.getMessage())
                 .body(responseUserRegistrationDto)
@@ -129,7 +151,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     private void setDefaultRole(User user) throws RoleNotFoundException {
-        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_USER);
+        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.USER);
         if (userRole.isPresent()) {
             user.setUserRoles(Set.of(userRole.get()));
         } else {
@@ -138,7 +160,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     private void setAdminRole(User admin) throws RoleNotFoundException {
-        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_ADMIN);
+        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ADMIN);
         if (userRole.isPresent()) {
             admin.setUserRoles(Set.of(userRole.get()));
         } else {
@@ -162,7 +184,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         Object[] objects = userRoles.toArray();
         if (userRoles == null) {
             return false;
-        } else if (((UserRole) objects[0]).getRole().equals(Role.ROLE_ADMIN)) {
+        } else if (((UserRole) objects[0]).getRole().equals(Role.ADMIN)) {
             addUserRoleToExistingAdmin(user);
             log.info("Added user role");
             return true;
@@ -180,9 +202,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         List<String> rolesString = roles.stream().map(SimpleGrantedAuthority::getAuthority).collect(Collectors.toList());
         UserVerificationToken userRefreshToken = userVerificationTokenService.generateRefreshToken(username);
         String refreshTokenUuid = userRefreshToken.getUuid();
-        User byUsername = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
 
-        String uuid = byUsername.getUuid();
+        Optional<UserProfile> optionalProfile = userProfileRepository.findByUsername(username);
+
+        UserProfile userProfile = optionalProfile.get();
+
+        String uuid = user.getUuid();
 
         Pair<String, String> userUuid = Pair.of("userUuid", uuid);
 
@@ -190,45 +216,31 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
         Pair<String, List<String>> userRoles = Pair.of("userRoles", rolesString);
 
-        ChronoUnit minutes = ChronoUnit.MINUTES;
+        ChronoUnit hours = ChronoUnit.HOURS;
 
-        String accessToken = jwtCreator.createAccessToken(username, refreshToken, minutes, userUuid, userRoles);
+        String accessToken = jwtCreator.createAccessToken(username, refreshToken, hours, userUuid, userRoles);
 
-        ResponseLoginDto responseLoginDto = ResponseLoginDto.builder().accessToken(accessToken).build();
+        ResponseProfileDto profileDto = ResponseProfileDto
+                .builder()
+                .id(userProfile.getUuid())
+                .username(username)
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .profilePhotoUrl(userProfile.getProfilePhotoURL())
+                .coverPhotoUrl(userProfile.getCoverPhotoURL())
+                .build();
 
         return ResponseBaseDto.builder()
-                .body(responseLoginDto)
-                .message("Here is the access token")
+                .message(accessToken)
+                .body(profileDto)
                 .build();
     }
 
-    @Override
-    public List<ResponseBaseDto> getAllUsers() {
-
-        List<User> allUsers = userRepository.findAll();
-
-        List<ResponseBaseDto> collect = allUsers.stream().map(
-                each -> getUserById(each.getId())).collect(Collectors.toList());
-
-
-        return collect;
-
-//        Set<String> uuids = new LinkedHashSet<>();
-//        allUsers.forEach(
-//                each -> uuids.add(each.getUuid())
-//        );
-
-
-//        return ResponseBaseDto.builder()
-//                .body(ResponseUsersDto.builder().userUuids(uuids).build())
-//                .message("Here are all the Users")
-//                .build();
-    }
 
     @Override
-    public ResponseBaseDto getUserById(Long userId) {
+    public ResponseBaseDto getUserById(String userId) {
 
-        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<User> userOptional = userRepository.findByUuid(userId);
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -241,7 +253,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
                 return ResponseBaseDto.builder()
                         .body(ResponseUserDto.builder()
-                                .id(userId)
                                 .userUuid(user.getUuid())
                                 .username(user.getUsername())
                                 .firstName(user.getFirstName())
@@ -262,7 +273,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public void addAdminRoleToExistingUser(RequestRegistrationDTO adminDto) throws RoleNotFoundException {
         User user = userRepository.findByUsername(adminDto.getUsername());
-        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_ADMIN);
+        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ADMIN);
         if (userRole.isPresent()) {
             Set<UserRole> userRoles = user.getUserRoles();
             userRoles.add(userRole.get());
@@ -277,12 +288,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User byUsername = userRepository.findByUsername(username);
         Set<UserRole> userRoles = byUsername.getUserRoles();
         Object[] objects = userRoles.toArray();
-        return ((UserRole) objects[0]).getRole().equals(Role.ROLE_USER);
+        return ((UserRole) objects[0]).getRole().equals(Role.USER);
     }
 
     public void addUserRoleToExistingAdmin(User existingUser) throws RoleNotFoundException {
         User user = userRepository.findByUsername(existingUser.getUsername());
-        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.ROLE_USER);
+        Optional<UserRole> userRole = userRoleRepository.findByRole(Role.USER);
         if (userRole.isPresent()) {
             Set<UserRole> userRoles = user.getUserRoles();
             userRoles.add(userRole.get());
@@ -298,25 +309,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-        User user = userRepository.findByUsername(username);
-
-        if (user == null) {
-            log.error("User {} not found in db", username);
-            throw new UsernameNotFoundException("User not found in database");
-        }
-        log.info("User found in database: {}", username);
-
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
-        user.getUserRoles().forEach(userRole -> authorities.add(new SimpleGrantedAuthority(userRole.getRole().toString())));
-
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
-
     }
 
 

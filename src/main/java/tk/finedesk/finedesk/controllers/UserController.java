@@ -14,7 +14,6 @@ import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
 import tk.finedesk.finedesk.services.UserService;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -43,30 +42,19 @@ public class UserController {
         }
     }
 
-    @RequestMapping(
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getAllUsers() {
-
-//        ResponseBaseDto allUsers = userService.getAllUsers();
-//        return ResponseEntity.ok(allUsers);
-
-        //TODO this is supposed to be change
-        List<ResponseBaseDto> allUsers = userService.getAllUsers();
-        return ResponseEntity.ok().body(allUsers);
-    }
-
 
     @RequestMapping(value = "/{userId}",
-            method = RequestMethod.GET)
-    public ResponseEntity<ResponseBaseDto> getUserById(@PathVariable Long userId) {
-
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseBaseDto> getUserById(@PathVariable String userId) {
         if (userId != null) {
             ResponseBaseDto userById = userService.getUserById(userId);
-            return ResponseEntity.ok().body(userById);
+            return ResponseEntity.ok()
+                    .body(userById);
         }
-
-        return ResponseEntity.internalServerError().body(ResponseBaseDto.builder().build());
+        return ResponseEntity
+                .internalServerError()
+                .body(ResponseBaseDto.builder().build());
     }
 
 }

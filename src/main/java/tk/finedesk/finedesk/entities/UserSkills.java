@@ -4,14 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -25,13 +30,11 @@ public class UserSkills {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_profile_id")
-    private UserProfile userProfile;
-
-    @ManyToOne
-    @JoinColumn(name = "creative_tool_id")
-    private CreativeTool creativeTool;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "uuid",
+            strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "user_skills_UUID", columnDefinition = "VARCHAR(255)", updatable = false, nullable = false)
+    private String uuid = UUID.randomUUID().toString();
 
     private String level;
 

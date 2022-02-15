@@ -3,6 +3,8 @@ package tk.finedesk.finedesk.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import tk.finedesk.finedesk.dto.response.ResponseProfileDto;
 import tk.finedesk.finedesk.entities.User;
 import tk.finedesk.finedesk.entities.UserProfile;
 import tk.finedesk.finedesk.repositories.UserProfileRepository;
@@ -18,10 +20,11 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final UserProfileRepository userProfileRepository;
 
     @Override
-    public void createProfile(User user) {
+    public UserProfile createProfile(User user) {
         UserProfile userProfile = new UserProfile();
         userProfile.setUser(user);
         user.setProfile(userProfile);
+        return userProfileRepository.save(userProfile);
     }
 
     @Override
@@ -29,21 +32,22 @@ public class UserProfileServiceImpl implements UserProfileService {
         return userProfileRepository.save(userProfile);
     }
 
-
-
-
     @Override
     public UserProfile findByUsername(String username) {
-
         Optional<UserProfile> profile = userProfileRepository.findByUsername(username);
-        if (profile.isPresent()) {
-            return profile.get();
-        }
-        return null;
+        return profile.orElse(null);
     }
 
     @Override
     public UserProfile findByProjectId(Long projectId) {
         return userProfileRepository.findProfileByProjectLikes(projectId);
+    }
+
+    @Override
+    public ResponseProfileDto uploadProfilePhoto(MultipartFile profilePhoto) {
+
+        //TODO call S3 service to upload photos
+
+        return null;
     }
 }
