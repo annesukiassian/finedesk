@@ -1,13 +1,31 @@
 package tk.finedesk.finedesk.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tk.finedesk.finedesk.repositories.UserRepository;
+import tk.finedesk.finedesk.dto.request.RequestRegistrationDTO;
+import tk.finedesk.finedesk.dto.response.ResponseBaseDto;
+import tk.finedesk.finedesk.entities.User;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+import javax.management.relation.RoleNotFoundException;
+import java.util.List;
 
-    private final UserRepository userRepository;
 
+public interface UserService {
+
+    ResponseBaseDto registerUser(RequestRegistrationDTO userDto) throws IllegalAccessException, RoleNotFoundException;
+
+    ResponseBaseDto registerAdmin(RequestRegistrationDTO adminDto) throws RoleNotFoundException;
+
+    User getUserByUsername(String username);
+
+    boolean isUserExists(RequestRegistrationDTO userDto) throws RoleNotFoundException;
+
+
+    ResponseBaseDto checkUser(String username) throws IllegalAccessException;
+
+    List<ResponseBaseDto> getAllUsers();
+
+    ResponseBaseDto getUserById(Long userId);
+
+    void addAdminRoleToExistingUser(RequestRegistrationDTO adminDto) throws RoleNotFoundException;
+
+    boolean isRegisteredAsUser(String username);
 }

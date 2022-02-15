@@ -32,3 +32,14 @@ build/
 ### VS Code ###
 .vscode/
 /pg_data/
+/pg_data/*
+/pg_data/**/
+/pg_data/**/**
+/pg_data/**/**/**
+/pg_data/base/****
+/pg_data/global/**
+/pg_data/pg_logical/**
+/pg_data/pg_multixact/**
+/pg_data/pg_stat/**
+/pg_data/pg_subtrans/**
+/pg_data/pg_xact/**

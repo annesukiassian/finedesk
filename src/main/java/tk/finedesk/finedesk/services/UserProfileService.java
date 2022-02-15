@@ -1,13 +1,16 @@
 package tk.finedesk.finedesk.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tk.finedesk.finedesk.repositories.UserProjectRepository;
 
-@Service
-@RequiredArgsConstructor
-public class UserProfileService {
+import tk.finedesk.finedesk.entities.User;
+import tk.finedesk.finedesk.entities.UserProfile;
 
-    private final UserProjectRepository userProjectRepository;
+public interface UserProfileService {
 
+    void createProfile(User user);
+
+    UserProfile save(UserProfile userProfile);
+
+    UserProfile findByUsername(String username);
+
+    UserProfile findByProjectId(Long projectId);
 }

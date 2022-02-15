@@ -1,13 +1,15 @@
 package tk.finedesk.finedesk.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tk.finedesk.finedesk.repositories.UserProjectRepository;
 
-@Service
-@RequiredArgsConstructor
-public class UserProjectService {
+import org.springframework.web.multipart.MultipartFile;
+import tk.finedesk.finedesk.dto.response.ResponseLikeDto;
+import tk.finedesk.finedesk.dto.response.ResponseProjectDto;
 
-    private final UserProjectRepository userProjectRepository;
+import java.util.List;
 
+public interface UserProjectService {
+
+    ResponseProjectDto addNewItemToProject(List<MultipartFile> images, String username, String projectName, String description);
+
+    ResponseLikeDto likeProject(Long projectId, String username);
 }

@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import tk.finedesk.finedesk.entities.ProjectItem;
 
 @Repository
-public interface ProjectItemRepository extends JpaRepository<ProjectItem, Long> {
+public interface ProjectItemRepository extends JpaRepository <ProjectItem,Long> {
 }

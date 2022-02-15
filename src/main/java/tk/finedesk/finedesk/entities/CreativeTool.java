@@ -3,7 +3,6 @@ package tk.finedesk.finedesk.entities;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -20,8 +19,8 @@ import java.util.Set;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Entity
-@Table(name = "tools")
-public class Tool {
+@Table(name = "creative_tools")
+public class CreativeTool {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +29,6 @@ public class Tool {
     @NotNull
     private String name;
 
-    @OneToMany(mappedBy = "tool")
+    @OneToMany(mappedBy = "creativeTool")
     Set<UserSkills> userSkills;
 }

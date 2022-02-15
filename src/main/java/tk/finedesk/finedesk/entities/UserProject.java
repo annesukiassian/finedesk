@@ -1,9 +1,12 @@
 package tk.finedesk.finedesk.entities;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,12 +15,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
+@Builder
 @Getter
 @Setter
-@NoArgsConstructor
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Entity
 @Table(name = "user_projects")
 public class UserProject {
@@ -26,17 +36,18 @@ public class UserProject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime creationDate;
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date creationDate = Date.from(Instant.from(ZonedDateTime.now()));
 
+    @Column(unique = true)
     private String name;
 
     private String description;
 
-    @OneToMany
-    private Set<ProjectItem> projectItems;
-
     @ManyToOne
     @JoinColumn(name = "user_profile_id")
-    private UserProfile userProfiles;
+    private UserProfile userProfile;
 
+    @OneToMany
+    private Set<Like> likes = new HashSet<>();
 }

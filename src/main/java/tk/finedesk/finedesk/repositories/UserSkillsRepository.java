@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import tk.finedesk.finedesk.entities.UserSkills;
 
 @Repository
-public interface UserSkillsRepository extends JpaRepository<UserSkills,Long> {
+public interface UserSkillsRepository extends JpaRepository <UserSkills,Long>{
 }

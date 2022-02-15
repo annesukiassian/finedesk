@@ -1,13 +1,8 @@
 package tk.finedesk.finedesk.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tk.finedesk.finedesk.repositories.ProjectItemRepository;
+import tk.finedesk.finedesk.entities.ProjectItem;
 
-@Service
-@RequiredArgsConstructor
-public class ProjectItemService {
+public interface ProjectItemService {
 
-    private final ProjectItemRepository projectItemRepository;
-
+    ProjectItem createProjectItem(String imageUrl, Long projectId);
 }
