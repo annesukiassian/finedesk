@@ -1,7 +1,6 @@
 package tk.finedesk.finedesk.security;
 
 
-import com.amazonaws.services.ssooidc.model.ExpiredTokenException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.Claim;
 import io.jsonwebtoken.MalformedJwtException;
@@ -117,8 +116,6 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             return true;
         } catch (MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
             throw new BadCredentialsException("Invalid credentials", e);
-        } catch (ExpiredTokenException ex) {
-            throw ex;
         }
     }
 }

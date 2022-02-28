@@ -41,7 +41,7 @@ public class UserProject {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "uuid",
             strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "user_project_UUID", columnDefinition = "VARCHAR(255)", updatable = false, nullable = false)
+    @Column(name = "user_project_UUID", columnDefinition = "VARCHAR(255)", updatable = false)
     private String uuid = UUID.randomUUID().toString();
 
     @Temporal(value = TemporalType.TIMESTAMP)

@@ -3,6 +3,7 @@ package tk.finedesk.finedesk.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -10,6 +11,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import tk.finedesk.finedesk.aws.services.AmazonS3Service;
 import tk.finedesk.finedesk.dto.response.ResponseLikeDto;
 import tk.finedesk.finedesk.dto.response.ResponseProjectDto;
@@ -27,9 +33,8 @@ import tk.finedesk.finedesk.services.UserProfileService;
 import tk.finedesk.finedesk.services.UserProjectService;
 import tk.finedesk.finedesk.services.UserService;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
@@ -37,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,7 +59,13 @@ public class UserProjectServiceImpl implements UserProjectService {
     private final LikeService likeService;
     private final ProjectItemRepository projectItemRepository;
     private final ModelMapper mapper;
-    private AmazonS3Service amazonS3Service;
+    private final AmazonS3Service amazonS3Service;
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
+
+
+    @Value("${aws.bucket}")
+    String bucketName;
 
     @Override
     public ResponseProjectDto createProjectAndUploadImages(List<MultipartFile> images,
@@ -63,20 +75,53 @@ public class UserProjectServiceImpl implements UserProjectService {
         if (profile == null) {
             return null;
         }
-        writeFiles(images);
 
-        String imageUrl = "/IdeaProjects/finedesk/src/main/resources/files/";
+        try {
+            List<PutObjectRequest> putObjectRequests = images.stream()
+                    .map(image -> PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(projectName + "/" + image.getOriginalFilename())
+                            .build()).collect(Collectors.toList());
+
+
+            long maxSize = 10_000;
+            maxSize = getMaxSizeOfFile(images, maxSize);
+            for (PutObjectRequest putObjectRequest : putObjectRequests) {
+                try {
+                    PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, RequestBody.fromByteBuffer(getRandomByteBuffer((int) maxSize)));
+//amazonS3Service.putObject(bucketName,projectName, new Source(putObjectRequest))
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            List<String> urls = images.stream()
+                    .map(
+                            image -> amazonS3Service.getPresignedUrl(s3Presigner, bucketName, projectName + "/" + image.getOriginalFilename())
+                    ).collect(Collectors.toList());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String endpointUrl = "https://s3.console.aws.amazon.com/s3/buckets/finedesk-projects";
         UserProject savedProject = createUserProject(projectName, description, profile);
         Long projectId = savedProject.getId();
+
         Set<String> itemUrls = new LinkedHashSet<>();
+
         images.forEach(
-                each -> itemUrls.add(imageUrl + each.getOriginalFilename())
+                image -> itemUrls.add(endpointUrl + "/" + projectName + "/" + image.getOriginalFilename())
         );
-        List<ProjectItem> projectItems = new LinkedList<>();
+
+        LinkedList<ProjectItem> projectItems = new LinkedList<>();
+
         for (String itemUrl : itemUrls) {
             ProjectItem projectItem = projectItemService.createProjectItem(itemUrl, projectId);
             projectItems.add(projectItem);
         }
+
         List<ResponseProjectItemDto> projectItemDtos = projectItems.stream()
                 .map(projectItem -> ResponseProjectItemDto.builder()
                         .imageUrl(projectItem.getImageURL())
@@ -90,20 +135,22 @@ public class UserProjectServiceImpl implements UserProjectService {
                 .description(savedProject.getDescription())
                 .creationDate(savedProject.getCreationDate())
                 .likeCount((long) savedProject.getLikes().size())
-                .projectItems(projectItemDtos)
+//                .projectItems(projectItemDtos)
                 .build();
         //TODO create update method and use it.
     }
 
-    private void writeFiles(List<MultipartFile> images) {
-        images.forEach(image -> {
-            try {
-                File destinationImage = new File("src/main/resources/files/" + image.getOriginalFilename());
-                Files.write(destinationImage.toPath(), image.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+    private long getMaxSizeOfFile(List<MultipartFile> images, long maxSize) {
+        for (MultipartFile file : images) {
+            maxSize = Math.max(maxSize, file.getSize());
+        }
+        return maxSize;
+    }
+
+    private ByteBuffer getRandomByteBuffer(int size) throws IOException {
+        byte[] bytes = new byte[size];
+        new Random().nextBytes(bytes);
+        return ByteBuffer.wrap(bytes);
     }
 
     public UserProject createUserProject(String projectName, String description, UserProfile profile) {
@@ -120,8 +167,6 @@ public class UserProjectServiceImpl implements UserProjectService {
     @Transactional
     @Override
     public ResponseLikeDto likeProject(String projectId, String username) {
-
-//        Optional<UserProject> projectById = userProjectRepository.findById(projectId);
 
         Optional<UserProject> projectById = userProjectRepository.findByUuid(projectId);
 
@@ -183,11 +228,7 @@ public class UserProjectServiceImpl implements UserProjectService {
 
             return ResponseLikeDto.builder().message("Project liked").build();
         }
-
-        //TODO ete ka, jnjum enq, ete che, avelacnum
-
         return ResponseLikeDto.builder().message("You can't like this project as Admin").build();
-
     }
 
     @Override

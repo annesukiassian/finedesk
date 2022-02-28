@@ -80,7 +80,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         web.ignoring().mvcMatchers(HttpMethod.OPTIONS, "/**");
         // ignore swagger
         web.ignoring().mvcMatchers("/swagger-ui.html/**", "/configuration/**", "/swagger-resources/**", "/v2/api-docs", "/v3/api-docs");
-        web.ignoring().antMatchers("/auth/login", "/users/register", "/verification/confirm/**");
+        web.ignoring().antMatchers("/auth/login", "/users/register", "/verification/confirm/**", "/projects");
     }
 
     @Override
@@ -90,7 +90,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/verification/confirm", "/auth/login", "/users/register").permitAll()
+                .antMatchers("/verification/confirm", "/auth/login", "/users/register", "/projects").permitAll()
                 .antMatchers("/projects", "/logout", "/projectItems", "/profiles", "/skills", "/creativeTools").authenticated()
                 .anyRequest().permitAll()
                 .and()

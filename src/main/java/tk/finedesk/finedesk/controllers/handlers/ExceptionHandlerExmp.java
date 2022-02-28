@@ -1,7 +1,5 @@
 package tk.finedesk.finedesk.controllers.handlers;
 
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

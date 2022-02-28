@@ -30,10 +30,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Slf4j
 @Getter
 @Setter
-@PreAuthorize("hasAuthority('USER')")
 @RestController
 @RequestMapping("/projects")
 @RequiredArgsConstructor
@@ -42,6 +42,7 @@ public class UserProjectController {
     private final UserProjectService userProjectService;
     private final UserProfileService userProfileService;
 
+    @PreAuthorize("hasAuthority('USER')")
     @RequestMapping(
             value = "/{projectName}",
             method = RequestMethod.POST,
@@ -81,6 +82,7 @@ public class UserProjectController {
         }
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @Transactional
     @RequestMapping(value = "/{projectId}/like",
             method = RequestMethod.POST

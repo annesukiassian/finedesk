@@ -142,7 +142,7 @@ create table if not exists finedesk.user_projects
     creation_date     timestamp,
     description       varchar(255),
     name              varchar(255),
-    user_project_uuid varchar(255) not null,
+    user_project_uuid varchar(255),
     user_profile_id   bigint
     constraint fkkxkgtcs9iyducrsvem4bo1blu
     references finedesk.user_profiles
